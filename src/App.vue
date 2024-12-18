@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 import Cell from './Cell.vue';
 
 const nineArray = Array.from({ length: 9 }, (_, i) => i + 1);
@@ -109,6 +109,7 @@ const validCombinations = computed<Set<Combination>>(() => compute({
   cageSumRange: [cageSumMin.value, cageSumMax.value],
 }))
 
+const markedCombinations = ref(new Set<Combination>());
 
 
 const byCageSizeBySum = computed<Map<number, Map<number, Combination[]>>>(() => {
@@ -147,6 +148,7 @@ function resetAll() {
   maxCageSize.value = 9;
   cageSumMin.value = 0;
   cageSumMax.value = 0;
+  markedCombinations.value.clear();
 }
 
 
@@ -181,14 +183,14 @@ const showAll = ref(false);
             }" @click="setSize(cageSize, !($event.ctrlKey || $event.shiftKey))">
             {{ cageSize }}
           </button>
-          <button class="btn btn-outline-secondary" type="button" @click="minCageSize = 1; maxCageSize=9;">reset</button>
+          <button class="btn btn-outline-danger" type="button" @click="minCageSize = 1; maxCageSize=9;">reset</button>
         </div>
 
         <div class="input-group my-3 flex-nowrap" style="max-width: 350px;">
           <input type="number" class="form-control" v-model="cageSumModelMin" :min="0" :max="45" style="width: 100px;"/>
           <span class="input-group-text">sum</span>
           <input type="number" class="form-control" v-model="cageSumModelMax" :min="0" :max="45" style="width: 100px;"/>
-          <button class="btn btn-outline-secondary" type="button" @click="cageSumModelMax = cageSumModelMin = 0 ">reset</button>
+          <button class="btn btn-outline-danger" type="button" @click="cageSumModelMax = cageSumModelMin = 0 ">reset</button>
         </div>
 
         <div class="my-3">
@@ -202,7 +204,7 @@ const showAll = ref(false);
               }" @click="globalPencilMarks.has(n) ? globalPencilMarks.delete(n) : globalPencilMarks.add(n)">
                 {{ n }}
               </button>
-              <button class="btn btn-outline-secondary" type="button" @click="globalPencilMarks = new Set(initialPencilMarks)">reset</button>
+              <button class="btn btn-outline-danger" type="button" @click="globalPencilMarks = new Set(initialPencilMarks)">reset</button>
             </div>
           </div>
         </div>
@@ -218,10 +220,22 @@ const showAll = ref(false);
           <button class="btn btn-sm btn-danger" style="line-height: 0;width: 100%;" type="button"
             @click="removeCell">-</button>
           </div>
-          <button v-if ="cellSpecificPencilMarks.length" class="btn btn-lg text-center btn-outline-secondary me-2 align-self-center" @click="cellSpecificPencilMarks =[]" type="button">&times;</button>
+          <button v-if ="cellSpecificPencilMarks.length" class="btn btn-lg text-center btn-outline-danger me-2 align-self-center" @click="cellSpecificPencilMarks =[]" type="button">&times;</button>
 
         <Cell v-for="i in cellSpecificPencilMarks.length" v-model="cellSpecificPencilMarks[i - 1]" />
       </div>
+    </div>
+    
+    <div class="my-3" v-if="markedCombinations.size">
+      Verboden combinaties: 
+      <br>
+      <div v-for="combination in markedCombinations" 
+        class="btn btn-sm me-1 btn-outline-secondary"
+        @click="markedCombinations.delete(combination)"
+      >
+        {{ combination.numbers.join('') }}
+      </div>
+      <button class="btn btn-sm btn-outline-danger" @click="markedCombinations.clear">reset</button>
     </div>
 
     <div class="d-flex align-items-baseline mt-3">
@@ -232,6 +246,7 @@ const showAll = ref(false);
       </div>
     </div>
 
+
     <div v-for="[cageSize, values] in (showAll ? byCageSizeBySum : shownByCageSizeBySum)">
       <h3 class="text-danger border-bottom border-danger">{{ cageSize }}</h3>
       <div v-for="[sum, combinations] in values" class="d-flex">
@@ -239,9 +254,10 @@ const showAll = ref(false);
         <div v-for="combination in combinations" 
           class="btn btn-sm mx-1 align-self-center"
           :class="{
-             'btn-outline-secondary': !validCombinations.has(combination),
-             'btn-primary': validCombinations.has(combination),
+             'btn-outline-secondary': !validCombinations.has(combination) || markedCombinations.has(combination),
+             'btn-primary': validCombinations.has(combination) && !markedCombinations.has(combination),
           }"
+          @click="markedCombinations.has(combination) ? markedCombinations.delete(combination) : markedCombinations.add(combination)"
         >
           {{ combination.numbers.join('') }}
         </div>
