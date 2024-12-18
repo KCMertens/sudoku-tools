@@ -90,7 +90,6 @@ const cageSumMax = ref(0);
 const cageSumModelMax = computed({
   get: () => cageSumMax.value,
   set: (value: string|number) => {
-    debugger
     cageSumMax.value = Math.max(0, Math.min(Number(value), 45));
   }
 })
@@ -141,6 +140,16 @@ const shownByCageSizeBySum = computed(() => {
   return result;
 });
 
+function resetAll() {
+  globalPencilMarks.value = new Set(initialPencilMarks);
+  cellSpecificPencilMarks.value = [];
+  minCageSize.value = 1;
+  maxCageSize.value = 9;
+  cageSumMin.value = 0;
+  cageSumMax.value = 0;
+}
+
+
 
 const showAll = ref(false);
 
@@ -158,7 +167,7 @@ const showAll = ref(false);
 
   <main class="container">
     <div class="flex">
-      <div>
+      <div class="my-3">
         Cage size:
         <div class="btn-group" role="group" aria-label="Cage size">
           <button v-for="cageSize in 9" type="button" class="btn" :class="{
@@ -172,25 +181,28 @@ const showAll = ref(false);
             }" @click="setSize(cageSize, !($event.ctrlKey || $event.shiftKey))">
             {{ cageSize }}
           </button>
+          <button class="btn btn-outline-secondary" type="button" @click="minCageSize = 1; maxCageSize=9;">reset</button>
         </div>
 
-        <div>
-          Sum
-          <input type="number" class="form-control" v-model="cageSumModelMin" :min="0" :max="45" style="width: 250px;"/>
-          <input type="number" class="form-control" v-model="cageSumModelMax" :min="0" :max="45" style="width: 250px;"/>
+        <div class="input-group my-3 flex-nowrap" style="max-width: 350px;">
+          <input type="number" class="form-control" v-model="cageSumModelMin" :min="0" :max="45" style="width: 100px;"/>
+          <span class="input-group-text">sum</span>
+          <input type="number" class="form-control" v-model="cageSumModelMax" :min="0" :max="45" style="width: 100px;"/>
+          <button class="btn btn-outline-secondary" type="button" @click="cageSumModelMax = cageSumModelMin = 0 ">reset</button>
         </div>
 
-        <div>
+        <div class="my-3">
           Cage may contain:
           <div class="d-flex">
             <Cell v-model="globalPencilMarks" class="me-4" />
             <div class="btn-group align-self-center" role="group" aria-label="Cage may contain">
               <button v-for="n in 9" type="button" class="btn" :class="{
                 'btn-outline-secondary': !globalPencilMarks.has(n),
-                'btn-secondary': globalPencilMarks.has(n),
+                'btn-primary': globalPencilMarks.has(n),
               }" @click="globalPencilMarks.has(n) ? globalPencilMarks.delete(n) : globalPencilMarks.add(n)">
                 {{ n }}
               </button>
+              <button class="btn btn-outline-secondary" type="button" @click="globalPencilMarks = new Set(initialPencilMarks)">reset</button>
             </div>
           </div>
         </div>
@@ -205,13 +217,20 @@ const showAll = ref(false);
             @click="addCell">+</button>
           <button class="btn btn-sm btn-danger" style="line-height: 0;width: 100%;" type="button"
             @click="removeCell">-</button>
-        </div>
+          </div>
+          <button v-if ="cellSpecificPencilMarks.length" class="btn btn-lg text-center btn-outline-secondary me-2 align-self-center" @click="cellSpecificPencilMarks =[]" type="button">&times;</button>
 
         <Cell v-for="i in cellSpecificPencilMarks.length" v-model="cellSpecificPencilMarks[i - 1]" />
       </div>
     </div>
 
-    <label><input type="checkbox" v-model="showAll" /> Show all</label>
+    <div class="d-flex align-items-baseline mt-3">
+      <button type="reset" class="btn btn-danger me-2" @click="resetAll">reset</button>
+      <div class="form-check me-2">
+        <input class="form-check-input" type="checkbox" v-model="showAll" id="showAllCheckbox" />
+        <label class="form-check-label" for="showAllCheckbox">Show all</label>
+      </div>
+    </div>
 
     <div v-for="[cageSize, values] in (showAll ? byCageSizeBySum : shownByCageSizeBySum)">
       <h3 class="text-danger border-bottom border-danger">{{ cageSize }}</h3>
