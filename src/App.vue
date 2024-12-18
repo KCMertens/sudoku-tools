@@ -169,7 +169,7 @@ const showAll = ref(false);
             'text-body': minCageSize < cageSize && maxCageSize > cageSize,
           }" :style="{
               '--bs-bg-opacity': minCageSize < cageSize && maxCageSize > cageSize ? 0.1 : 1,
-            }" @click="setSize(cageSize, $event.ctrlKey || $event.shiftKey)">
+            }" @click="setSize(cageSize, !($event.ctrlKey || $event.shiftKey))">
             {{ cageSize }}
           </button>
         </div>
