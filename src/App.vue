@@ -20,13 +20,13 @@ function changeFocus(e: KeyboardEvent) {
     return;
   }
 
-  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === 'd' || e.key === 's') {
     const nextIndex = currentIndex + 1;
     if (nextIndex < focusElements.length) {
       (focusElements[nextIndex] as HTMLElement).focus();
     }
   }
-  if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+  if (e.key === 'ArrowLeft' || e.key === 'ArrowUp' || e.key === 'a' || e.key === 'w') {
     const nextIndex = currentIndex - 1;
     if (nextIndex >= 0) {
       (focusElements[nextIndex] as HTMLElement).focus();
