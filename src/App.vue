@@ -79,13 +79,23 @@ function setSize(n: number, force: boolean) {
 }
 
 
-const cageSum = ref(0);
-const cageSumModel = computed({
-  get: () => cageSum.value,
-  set: (value: number) => {
-    cageSum.value = Math.max(0, Math.min(value, 45));
+const cageSumMin = ref(0);
+const cageSumModelMin = computed({
+  get: () => cageSumMin.value,
+  set: (value: string|number) => {
+    cageSumMin.value = Math.max(0, Math.min(Number(value), 45));
   }
 })
+const cageSumMax = ref(0);
+const cageSumModelMax = computed({
+  get: () => cageSumMax.value,
+  set: (value: string|number) => {
+    debugger
+    cageSumMax.value = Math.max(0, Math.min(Number(value), 45));
+  }
+})
+
+
 
 
 
@@ -97,7 +107,7 @@ const validCombinations = computed<Set<Combination>>(() => compute({
   cellsMayOnlyContain: globalPencilMarks.value,
   minNumbeOfCages: minCageSize.value !== 0 ? minCageSize.value : undefined,
   maxNumberOfCages: maxCageSize.value !== 0 ? maxCageSize.value : undefined,
-  sum: cageSum.value,
+  cageSumRange: [cageSumMin.value, cageSumMax.value],
 }))
 
 
@@ -166,7 +176,8 @@ const showAll = ref(false);
 
         <div>
           Sum
-          <input type="number" class="form-control" v-model="cageSumModel" :min="0" :max="45" style="width: 250px;"/>
+          <input type="number" class="form-control" v-model="cageSumModelMin" :min="0" :max="45" style="width: 250px;"/>
+          <input type="number" class="form-control" v-model="cageSumModelMax" :min="0" :max="45" style="width: 250px;"/>
         </div>
 
         <div>

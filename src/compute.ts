@@ -49,23 +49,31 @@ function checkCells(remainingNumbers: Set<number>, cellindex: number, cellsMustC
     return false;
 }
 
-
 export default function compute(p: {
-    sum: number,
+    cageSumRange: [number, number],
     minNumbeOfCages?: number,
     maxNumberOfCages?: number,
     cellsMayOnlyContain: Set<number>,
     cellsMustContain: Array<Set<number>>,
 }) {
-    const { cellsMayOnlyContain, sum, maxNumberOfCages, minNumbeOfCages, cellsMustContain } = p;
+    const { cellsMayOnlyContain, cageSumRange, maxNumberOfCages, minNumbeOfCages, cellsMustContain } = p;
+    cageSumRange.sort((a,b) => a-b);
+
     return new Set(allCombinations.filter(c => {
         return (minNumbeOfCages == null || c.cageSize >= minNumbeOfCages) && 
             (maxNumberOfCages == null || c.cageSize <= maxNumberOfCages) && 
-            (sum === 0 || sum == c.sum) &&
-            
+            checkIsBetween(c.sum, cageSumRange) &&
             checkCells(new Set(c.numbers), 0, cellsMustContain, (remaining: Set<number>) => {
                 if (cellsMayOnlyContain.size > 0) return [...remaining].every(n => cellsMayOnlyContain.has(n));
                 return true;
             });
     }));
+}
+
+function checkIsBetween(numberToCheck:number, between:[number,number]) {
+    if (between[0] == 0 && between[1] == 0) return true;
+    // we weten dat als 1 van de 2 '0' is dat die in position 0 staat want gesorteerd.
+    // dan is de [1] dus altijd waar je mee vergelijkt.
+    else if (between[0] === 0 && between[1] !== 0) return numberToCheck === between[1] 
+    else return (between[0] <= numberToCheck && between[1] >= numberToCheck);
 }
